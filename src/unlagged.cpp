@@ -68,21 +68,22 @@ CVAR( Bool, sv_unlagged_debugactors, false, 0 )
 bool reconciledGame = false;
 int reconciliationBlockers = 0;
 
-void UNLAGGED_Tick( void )
+void UNLAGGED_Tick(void)
 {
 	// [BB] Only the server has to do anything here.
-	if ( NETWORK_GetState() != NETSTATE_SERVER )
+	if (NETWORK_GetState() != NETSTATE_SERVER)
 		return;
 
 	// [Spleen] Record sectors soon before they are reconciled/restored
-	UNLAGGED_RecordSectors( );
+	UNLAGGED_RecordSectors();
 
 	// [Spleen] Record players
-	for ( ULONG ulIdx = 0; ulIdx < MAXPLAYERS; ++ulIdx )
+	for (ULONG ulIdx = 0; ulIdx < MAXPLAYERS; ++ulIdx)
 	{
-		if ( PLAYER_IsValidPlayerWithMo( ulIdx ) )
-			UNLAGGED_RecordPlayer( &players[ulIdx] );
+		if (PLAYER_IsValidPlayerWithMo(ulIdx))
+			UNLAGGED_RecordPlayer(&players[ulIdx]);
 	}
+}
 
 //Figure out which tic to use for reconciliation
 int UNLAGGED_Gametic( player_t *player )

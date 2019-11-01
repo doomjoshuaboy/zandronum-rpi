@@ -594,33 +594,10 @@ void SERVER_Tick( void )
 		// Recieve packets.
 		SERVER_GetPackets( );
 
-		// We have to record player positions before emptying their movement buffer i.e.
-		// before their mobj moves.
+		// We have to record player positions before their mobj moves.
 		// [BB] Tick the unlagged module.
 		UNLAGGED_Tick();
 
-		// [BB] Process up to two movement commands for each client.
-		for ( ulIdx = 0; ulIdx < MAXPLAYERS; ulIdx++ )
-		{
-			if ( SERVER_IsValidClient( ulIdx ) == false )
-				continue;
-
-			int numMoveCMDs = 0;
-			while (g_aClients[ulIdx].MoveCMDs.Size() != 0)
-			{
-				g_aClients[ulIdx].MoveCMDs[0]->process ( ulIdx );
-
-				// [BB] Only limit the amount of movement commands.
-				if ( g_aClients[ulIdx].MoveCMDs[0]->isMoveCmd() )
-					++numMoveCMDs;
-
-				delete g_aClients[ulIdx].MoveCMDs[0];
-				g_aClients[ulIdx].MoveCMDs.Delete(0);
-
-				if ( numMoveCMDs == 2 )
-					break;
-			}
-		}
 		G_Ticker ();
 
 		// However we need to spawn the unlagged debug actors here i.e. after having processed their
