@@ -84,11 +84,6 @@ void UNLAGGED_Tick( void )
 			UNLAGGED_RecordPlayer( &players[ulIdx] );
 	}
 
-	// [BB] Spawn debug actors if the server runner wants them.
-	if ( sv_unlagged_debugactors )
-		UNLAGGED_SpawnDebugActors( );
-}
-
 //Figure out which tic to use for reconciliation
 int UNLAGGED_Gametic( player_t *player )
 {
