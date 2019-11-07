@@ -756,7 +756,7 @@ void CLIENT_SetLatestServerGametic( int latestServerGametic )
 //
 int CLIENT_GetServerGameticOffset(void)
  {
-	+return g_ServerGameticOffset;
+	return g_ServerGameticOffset;
 }
 
 //*****************************************************************************
