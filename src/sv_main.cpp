@@ -124,7 +124,6 @@
 #include "p_enemy.h"
 #include "network/packetarchive.h"
 #include "p_lnspec.h"
-#include "unlagged.h"
 
 //*****************************************************************************
 //	MISC CRAP THAT SHOULDN'T BE HERE BUT HAS TO BE BECAUSE OF SLOPPY CODING
@@ -138,7 +137,6 @@ void SERVERCONSOLE_ReListPlayers( void );
 
 EXTERN_CVAR( Bool, sv_cheats );
 EXTERN_CVAR( Bool, sv_showwarnings );
-EXTERN_CVAR( Bool, sv_unlagged_debugactors)
 
 //*****************************************************************************
 //	PROTOTYPES
@@ -594,20 +592,30 @@ void SERVER_Tick( void )
 		// Recieve packets.
 		SERVER_GetPackets( );
 
-		// We have to record player positions before their mobj moves.
-		// [BB] Tick the unlagged module.
-		UNLAGGED_Tick();
+		// [BB] Process up to two movement commands for each client.
+		for ( ulIdx = 0; ulIdx < MAXPLAYERS; ulIdx++ )
+		{
+			if ( SERVER_IsValidClient( ulIdx ) == false )
+				continue;
+
+			int numMoveCMDs = 0;
+			for ( unsigned int i = 0; i < g_aClients[ulIdx].MoveCMDs.Size(); ++i )
+			{
+				g_aClients[ulIdx].MoveCMDs[0]->process ( ulIdx );
+
+				// [BB] Only limit the amount of movement commands.
+				if ( g_aClients[ulIdx].MoveCMDs[0]->isMoveCmd() )
+					++numMoveCMDs;
+
+				delete g_aClients[ulIdx].MoveCMDs[0];
+				g_aClients[ulIdx].MoveCMDs.Delete(0);
+
+				if ( numMoveCMDs == 2 )
+					break;
+			}
+		}
 
 		G_Ticker ();
-
-		// However we need to spawn the unlagged debug actors here i.e. after having processed their
-        // movement commands which updated their last server gametic.
-        // [BB] Spawn debug actors if the server runner wants them.
-        if ( sv_unlagged_debugactors )
-            UNLAGGED_SpawnDebugActors( );
-
-		gametic++;
-		maketic++;
 
 		// Update the scoreboard if we have a new second to display.
 		if ( timelimit && (( level.time % TICRATE ) == 0 ) && ( level.time != iOldTime ))
@@ -689,6 +697,8 @@ void SERVER_Tick( void )
 				SERVERCOMMANDS_MapAuthenticate ( level.mapname, ulIdx, SVCF_ONLYTHISCLIENT );
 		}
 
+		gametic++;
+		maketic++;
 
 		// Do some statistic stuff every second.
 		if (( gametic % TICRATE ) == 0 )
@@ -1993,7 +2003,6 @@ void SERVER_SetupNewConnection( BYTESTREAM_s *pByteStream, bool bNewPlayer )
 	g_aClients[lClient].ulLastSuicideTime = 0;
 	g_aClients[lClient].lLastPacketLossTick = 0;
 	g_aClients[lClient].lLastMoveTick = 0;
-	g_aClients[lClient].lLastMoveTickProcess = 0;
 	g_aClients[lClient].lOverMovementLevel = 0;
 	g_aClients[lClient].bRunEnterScripts = false;
 	g_aClients[lClient].bSuspicious = false;
@@ -5287,15 +5296,6 @@ bool ClientMoveCommand::process( const ULONG ulClient ) const
 	{
 		if ( pPlayer->mo )
 		{
-			// We already processed a movement command this tic
-			if (g_aClients[ulClient].lLastMoveTickProcess == gametic)
-				{
-					// [Leo] We have no choice left but to tick the body now.
-					pPlayer->mo->Tick();
-				
-					// [EP] Make sure that the server sets the proper player psprite settings before running the psprite-events from this client command.
-					P_NewPspriteTick(pPlayer);
-				}
 
 			// [BB] Ignore the angle and pitch sent by the client if the client isn't authenticated yet.
 			// In this case the client still sends these values based on the previous map.
@@ -5319,9 +5319,14 @@ bool ClientMoveCommand::process( const ULONG ulClient ) const
 				pPlayer->mo->pitch = ( ANGLE_1 * 90 );
 
 			P_PlayerThink( pPlayer );
-			
-			// P_PlayerThink was called this tic, this is used to tick the body afterwards.
-			g_aClients[ulClient].lLastMoveTickProcess = gametic;
+
+			// [BB] The server blocks AActor::Tick() for non-bot player actors unless the player
+			// is the "current client". So we have to work around this.
+			const LONG savedCurrentClient = g_lCurrentClient;
+			g_lCurrentClient = ulClient;
+			if ( pPlayer->mo )
+				pPlayer->mo->Tick( );
+			g_lCurrentClient = savedCurrentClient;
 
 			// [BB] We possibly process more than one move of this client per tic,
 			// so we have to update oldbuttons (otherwise a door that just started to

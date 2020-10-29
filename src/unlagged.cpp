@@ -68,21 +68,25 @@ CVAR( Bool, sv_unlagged_debugactors, false, 0 )
 bool reconciledGame = false;
 int reconciliationBlockers = 0;
 
-void UNLAGGED_Tick(void)
+void UNLAGGED_Tick( void )
 {
 	// [BB] Only the server has to do anything here.
-	if (NETWORK_GetState() != NETSTATE_SERVER)
+	if ( NETWORK_GetState() != NETSTATE_SERVER )
 		return;
 
 	// [Spleen] Record sectors soon before they are reconciled/restored
-	UNLAGGED_RecordSectors();
+	UNLAGGED_RecordSectors( );
 
 	// [Spleen] Record players
-	for (ULONG ulIdx = 0; ulIdx < MAXPLAYERS; ++ulIdx)
+	for ( ULONG ulIdx = 0; ulIdx < MAXPLAYERS; ++ulIdx )
 	{
-		if (PLAYER_IsValidPlayerWithMo(ulIdx))
-			UNLAGGED_RecordPlayer(&players[ulIdx]);
+		if ( PLAYER_IsValidPlayerWithMo( ulIdx ) )
+			UNLAGGED_RecordPlayer( &players[ulIdx] );
 	}
+
+	// [BB] Spawn debug actors if the server runner wants them.
+	if ( sv_unlagged_debugactors )
+		UNLAGGED_SpawnDebugActors( );
 }
 
 //Figure out which tic to use for reconciliation
@@ -103,11 +107,13 @@ int UNLAGGED_Gametic( player_t *player )
 	if ( pClient == NULL )
 		return gametic;
 
-
+	// The logic here with + 1 is that you will be behind the server by one
+	// gametic, since the loop is: 1) poll input 2) update world 3) render,
+	// which makes your client old by one gametic.
 	// [CK] If the client wants ping unlagged, use that.
 	int unlaggedGametic = ( players[playerNum].userinfo.GetClientFlags() & CLIENTFLAGS_PING_UNLAGGED ) ?
 							gametic - ( player->ulPing * TICRATE / 1000 ) :
-							pClient->lLastServerGametic;
+							pClient->lLastServerGametic + 1;
 
 	// Do not let the client send us invalid gametics ahead of the server's
 	// gametic. This should be guarded against, but just in case...

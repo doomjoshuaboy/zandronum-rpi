@@ -109,6 +109,7 @@
 #include "domination.h"
 #include "win32/g15/g15.h"
 #include "gl/dynlights/gl_dynlight.h"
+#include "unlagged.h"
 #include "p_3dmidtex.h"
 #include "a_lightning.h"
 #include "po_man.h"
@@ -1719,6 +1720,9 @@ void G_Ticker ()
 			}
 
 		}
+
+		// [BB] Tick the unlagged module.
+		UNLAGGED_Tick( );
 
 		// [BB] Don't call P_Ticker on the server if there are no players.
 		// This significantly reduces CPU usage on maps with many monsters
