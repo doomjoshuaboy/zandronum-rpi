@@ -90,16 +90,14 @@ static FRandom pr_gunshot ("GunShot");
 //
 //---------------------------------------------------------------------------
 
-// [EP] Added player parameter.
-void P_NewPspriteTick(player_t * player)
+void P_NewPspriteTick()
 {
 	// This function should be called after the beginning of a tick, before any possible
 	// prprite-event, or near the end, after any possible psprite event.
 	// Because data is reset for every tick (which it must be) this has no impact on savegames.
 	for (int i = 0; i<MAXPLAYERS; i++)
 	{
-		// [EP] if player is not NULL, only this player's psprite settings are changed.
-		if (playeringame[i] && (player == NULL || player - players == i))
+		if (playeringame[i])
 		{
 			pspdef_t *pspdef = players[i].psprites;
 			for (int j = 0;j < NUMPSPRITES; j++)
