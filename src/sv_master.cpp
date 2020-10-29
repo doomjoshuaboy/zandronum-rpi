@@ -130,7 +130,7 @@ void SERVER_MASTER_Construct( void )
 	if ( uname(&u_name) < 0 )
 		g_VersionWithOS.Format ( "%s (RPIv%d)", GetVersionStringRev(), RPI_VERSION ); //error, no data
 	else
-		g_VersionWithOS.Format ( "%s on %s %s", GetVersionStringRev(), RPI_VERSION, u_name.sysname, u_name.release ); // "Linux 2.6.32.5-amd64" or "FreeBSD 9.0-RELEASE" etc
+		g_VersionWithOS.Format ( "%s (RPIv%d) on %s %s", GetVersionStringRev(), RPI_VERSION, u_name.sysname, u_name.release ); // "Linux 2.6.32.5-amd64" or "FreeBSD 9.0-RELEASE" etc
 #endif
 
 	// [TP] Which wads will we broadcast as optional to launchers?

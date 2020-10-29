@@ -142,6 +142,7 @@ unsigned int GetRevisionNumber();
 // The maximum length of one save game description for the menus.
 #define SAVESTRINGSIZE		24
 
-#define RPI_VERSION 5
+constexpr auto RPI_VERSION = 4;
+
 
 #endif //__VERSION_H__

@@ -1,4 +1,0 @@
-repo: cc9165005bbc6161c0adbdf418e79445e1b09598
-node: 10af1739daa34a45cb0817adfdef4106b20c0634
-branch: default
-tag: ZA_3.0.1
