@@ -144,4 +144,11 @@ unsigned int GetRevisionNumber();
 
 #define RPI_VERSION 5
 
+#if defined(_DEBUG) || defined(NDEBUG)
+#define RPI_VERSION_STR SAVEVERSTRINGIFY(RPI_VERSION) "-dbg"
+#else
+#define RPI_VERSION_STR SAVEVERSTRINGIFY(RPI_VERSION)
+#endif
+
+
 #endif //__VERSION_H__
