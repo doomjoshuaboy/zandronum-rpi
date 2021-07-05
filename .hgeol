@@ -1,8 +1,0 @@
-[patterns]
-**.c = native
-**.cpp = native
-**.h = native
-**.vcproj = CRLF
-
-[repository]
-native = LF
