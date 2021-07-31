@@ -658,7 +658,7 @@ LPTSTR stringDup(LPCTSTR lpszData, int cbData)
     if (lpszNew)
     {
         memcpy(lpszNew, lpszData, (cbData) * sizeof(TCHAR));
-        lpszNew[cbData] = (TCHAR)NULL;
+        lpszNew[cbData] = (TCHAR)0;
     }
     return lpszNew;
 }
